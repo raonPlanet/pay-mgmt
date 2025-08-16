@@ -1,0 +1,211 @@
+/**
+ * 급여명세서를 이미지로 변환하고 PDF로 다운로드하는 유틸리티
+ */
+
+import html2canvas from 'html2canvas';
+import jsPDF from 'jspdf';
+import { SalaryCalculation, formatKRW } from './salaryCalculator';
+
+/**
+ * 급여명세서를 이미지로 변환합니다
+ */
+export async function generateSalaryImage(salaryData: SalaryCalculation): Promise<string> {
+  // 임시 DOM 요소 생성
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = generateSalaryHTML(salaryData);
+  tempDiv.style.position = 'absolute';
+  tempDiv.style.left = '-9999px';
+  tempDiv.style.top = '-9999px';
+  document.body.appendChild(tempDiv);
+
+  try {
+    const canvas = await html2canvas(tempDiv, {
+      width: 800,
+      height: 600,
+      scale: 2,
+      backgroundColor: '#ffffff',
+      logging: false,
+      useCORS: true
+    });
+
+    const imageData = canvas.toDataURL('image/png');
+    return imageData;
+  } finally {
+    document.body.removeChild(tempDiv);
+  }
+}
+
+/**
+ * 급여명세서를 PDF로 다운로드합니다
+ */
+export async function downloadSalaryPDF(salaryData: SalaryCalculation): Promise<void> {
+  const tempDiv = document.createElement('div');
+  tempDiv.innerHTML = generateSalaryHTML(salaryData);
+  tempDiv.style.position = 'absolute';
+  tempDiv.style.left = '-9999px';
+  tempDiv.style.top = '-9999px';
+  document.body.appendChild(tempDiv);
+
+  try {
+    const canvas = await html2canvas(tempDiv, {
+      width: 800,
+      height: 600,
+      scale: 2,
+      backgroundColor: '#ffffff',
+      logging: false,
+      useCORS: true
+    });
+
+    const imgData = canvas.toDataURL('image/png');
+    const pdf = new jsPDF('p', 'mm', 'a4');
+    const imgWidth = 210;
+    const pageHeight = 295;
+    const imgHeight = (canvas.height * imgWidth) / canvas.width;
+    let heightLeft = imgHeight;
+
+    let position = 0;
+
+    pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+    heightLeft -= pageHeight;
+
+    while (heightLeft >= 0) {
+      position = heightLeft - imgHeight;
+      pdf.addPage();
+      pdf.addImage(imgData, 'PNG', 0, position, imgWidth, imgHeight);
+      heightLeft -= pageHeight;
+    }
+
+    const fileName = `${salaryData.employeeName}_${salaryData.workPeriod.split('~')[0].trim()}_급여명세서.pdf`;
+    pdf.save(fileName);
+  } finally {
+    document.body.removeChild(tempDiv);
+  }
+}
+
+/**
+ * 급여명세서 HTML을 생성합니다 (이미지 변환용)
+ */
+function generateSalaryHTML(salaryData: SalaryCalculation): string {
+  return `
+    <div style="
+      font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
+      width: 800px;
+      padding: 40px;
+      background: white;
+      color: #333;
+    ">
+      <!-- 제목 -->
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="font-size: 28px; font-weight: bold; color: #2c3e50; margin: 0;">
+          ${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서
+        </h1>
+      </div>
+
+      <!-- 근로자 정보 -->
+      <div style="margin-bottom: 30px;">
+        <h2 style="font-size: 18px; color: #34495e; margin-bottom: 15px;">성명: ${salaryData.employeeName}</h2>
+      </div>
+
+      <!-- 급여 지급 내역 테이블 -->
+      <div style="margin-bottom: 40px;">
+        <h3 style="font-size: 16px; color: #2c3e50; margin-bottom: 15px; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+          급여 지급 내역
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+          <thead>
+            <tr style="background-color: #f8f9fa;">
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">근무일자</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">근무일수</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">근무시간</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">시급</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">급여액수</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">주휴수당</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">상여금</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">합계</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workPeriod}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workDays}일</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workHours}시간</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.hourlyWage)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.baseSalary)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.weeklyHolidayAllowance)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.bonus)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold; color: #e74c3c;">
+                ${formatKRW(salaryData.totalSalary)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 공제 및 실지급액 테이블 -->
+      <div>
+        <h3 style="font-size: 16px; color: #2c3e50; margin-bottom: 15px; border-bottom: 2px solid #e74c3c; padding-bottom: 5px;">
+          공제 및 실지급액
+        </h3>
+        <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
+          <thead>
+            <tr style="background-color: #f8f9fa;">
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">원천징수율</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">소득세</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">농어촌세</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">징수 금액</th>
+              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">실 지급 금액</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">3.30%</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.incomeTax)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.ruralTax)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.totalDeduction)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold; color: #27ae60;">
+                ${formatKRW(salaryData.netPayment)}
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+
+      <!-- 하단 정보 -->
+      <div style="margin-top: 30px; text-align: center; color: #7f8c8d; font-size: 14px;">
+        <p>본 명세서는 자동 계산 프로그램으로 생성되었습니다.</p>
+        <p>생성일시: ${new Date().toLocaleDateString('ko-KR')}</p>
+      </div>
+    </div>
+  `;
+}
+
+/**
+ * 카카오톡 공유를 위한 이미지 URL을 생성합니다
+ */
+export async function shareToKakao(salaryData: SalaryCalculation): Promise<void> {
+  try {
+    const imageData = await generateSalaryImage(salaryData);
+    
+    // 카카오톡 공유 API 호출 (실제 구현 시 카카오톡 앱 연동 필요)
+    if (navigator.share) {
+      // Web Share API 사용
+      await navigator.share({
+        title: `${salaryData.employeeName} 급여명세서`,
+        text: `${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서입니다.`,
+        url: imageData
+      });
+    } else {
+      // 폴백: 이미지 다운로드
+      const link = document.createElement('a');
+      link.download = `${salaryData.employeeName}_급여명세서.png`;
+      link.href = imageData;
+      link.click();
+    }
+  } catch (error) {
+    console.error('카카오톡 공유 중 오류 발생:', error);
+    alert('공유 기능을 사용할 수 없습니다. 이미지를 다운로드합니다.');
+    
+    // 오류 발생 시 PDF 다운로드로 대체
+    await downloadSalaryPDF(salaryData);
+  }
+}

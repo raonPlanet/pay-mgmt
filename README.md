@@ -1,36 +1,168 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# 💰 급여계산 프로그램
 
-## Getting Started
+Next.js + TypeScript + Tailwind CSS로 구현된 가벼운 급여계산 웹앱입니다.
 
-First, run the development server:
+## ✨ 주요 기능
+
+- **자동 급여계산**: 월, 성명, 시급만 입력하면 모든 계산이 자동으로 이루어집니다
+- **근무일수 자동계산**: 주말과 공휴일을 제외한 실제 근무일수를 자동으로 계산합니다
+- **이미지 생성**: 급여명세서를 PNG 이미지로 변환할 수 있습니다
+- **PDF 다운로드**: 급여명세서를 PDF 파일로 다운로드할 수 있습니다
+- **카카오톡 공유**: 모바일에서 카카오톡으로 이미지를 공유할 수 있습니다
+- **반응형 디자인**: PC와 모바일 모두에서 최적화된 사용자 경험을 제공합니다
+
+## 🚀 시작하기
+
+### 필수 요구사항
+
+- Node.js 18.0.0 이상
+- npm 또는 yarn
+
+### 설치 및 실행
+
+1. **저장소 클론**
+   ```bash
+   git clone [repository-url]
+   cd pay-mgmt
+   ```
+
+2. **의존성 설치**
+   ```bash
+   npm install
+   ```
+
+3. **개발 서버 실행**
+   ```bash
+   npm run dev
+   ```
+
+4. **브라우저에서 확인**
+   ```
+   http://localhost:3000
+   ```
+
+### 빌드 및 배포
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+# 프로덕션 빌드
+npm run build
+
+# 프로덕션 서버 실행
+npm start
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 📊 급여계산 로직
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### 기본 계산 공식
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- **근무시간**: `근무일수 × 4시간`
+- **급여액**: `근무시간 × 시급`
+- **주휴수당**: `시급 × 8시간 × (근무일수 ÷ 20)`
+- **총 급여**: `급여액 + 주휴수당 + 상여금`
 
-## Learn More
+### 세금 공제
 
-To learn more about Next.js, take a look at the following resources:
+- **소득세**: `총 급여 × 3.3%`
+- **원천징수율**: 3.3%
+- **농어촌세**: `소득세 × 10%`
+- **실지급액**: `총 급여 - (소득세 + 농어촌세)`
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+### 공휴일 처리
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+2025년 기준으로 다음 공휴일들이 자동으로 제외됩니다:
+- 신정, 설날, 삼일절, 어린이날
+- 부처님 오신 날, 현충일, 광복절
+- 개천절, 한글날, 크리스마스
 
-## Deploy on Vercel
+## 🛠️ 기술 스택
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+- **Frontend**: Next.js 15, React 19, TypeScript
+- **Styling**: Tailwind CSS 4
+- **이미지 생성**: html2canvas
+- **PDF 생성**: jsPDF
+- **날짜 처리**: date-fns
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+## 📁 프로젝트 구조
+
+```
+src/
+├── app/                    # Next.js App Router
+│   ├── layout.tsx         # 루트 레이아웃
+│   ├── page.tsx           # 메인 페이지
+│   └── globals.css        # 전역 스타일
+├── components/             # React 컴포넌트
+│   ├── SalaryInputForm.tsx # 급여 입력 폼
+│   └── SalaryResult.tsx   # 급여 계산 결과
+└── lib/                    # 유틸리티 함수
+    ├── salaryCalculator.ts # 급여계산 로직
+    └── imageGenerator.ts   # 이미지/PDF 생성
+```
+
+## 🎯 사용법
+
+### 1. 급여계산 입력
+
+1. **월 선택**: 계산하고자 하는 년도와 월을 선택합니다
+2. **성명 입력**: 근로자 성명을 입력합니다 (기본값: 홍길동)
+3. **시급 입력**: 시간당 급여를 입력합니다 (기본값: 11,000원)
+4. **상여금 선택**: 상여금 포함 여부를 체크하고 금액을 입력합니다
+5. **계산하기**: "급여 계산하기" 버튼을 클릭합니다
+
+### 2. 결과 확인 및 공유
+
+- **급여 지급 내역**: 근무일수, 급여액, 주휴수당, 상여금, 합계
+- **공제 및 실지급액**: 소득세, 농어촌세, 징수금액, 실지급액
+- **이미지 생성**: 급여명세서를 PNG 이미지로 변환
+- **PDF 다운로드**: 급여명세서를 PDF 파일로 다운로드
+- **카카오톡 공유**: 모바일에서 카카오톡으로 이미지 공유
+
+## 🔧 커스터마이징
+
+### 기본값 변경
+
+`src/components/SalaryInputForm.tsx`에서 다음 값들을 수정할 수 있습니다:
+
+```typescript
+const [employeeName, setEmployeeName] = useState('홍길동');  // 기본 성명
+const [hourlyWage, setHourlyWage] = useState(11000);        // 기본 시급
+```
+
+### 공휴일 추가/수정
+
+`src/lib/salaryCalculator.ts`의 `HOLIDAYS_2025` 배열을 수정하여 공휴일을 관리할 수 있습니다.
+
+### 세율 변경
+
+`calculateSalary` 함수에서 다음 값들을 수정할 수 있습니다:
+
+```typescript
+const incomeTax = Math.round(totalSalary * 0.033); // 3.3%
+const ruralTax = Math.round(incomeTax * 0.1);      // 10%
+```
+
+## 📱 모바일 최적화
+
+- 반응형 테이블 디자인
+- 터치 친화적인 버튼 크기
+- 모바일 브라우저 호환 이미지 생성
+- Web Share API를 통한 네이티브 공유 기능
+
+## 🚨 주의사항
+
+- 이 프로그램은 참고용으로만 사용하시기 바랍니다
+- 실제 급여계산은 관련 법규와 회사 정책에 따라 달라질 수 있습니다
+- 공휴일 정보는 2025년 기준으로 설정되어 있습니다
+- 이미지 생성 시 브라우저 호환성을 확인해주세요
+
+## 📄 라이선스
+
+이 프로젝트는 MIT 라이선스 하에 배포됩니다.
+
+## 🤝 기여하기
+
+버그 리포트, 기능 제안, 풀 리퀘스트를 환영합니다!
+
+---
+
+**개발자**: 급여계산 프로그램 팀  
+**최종 업데이트**: 2025년 1월
