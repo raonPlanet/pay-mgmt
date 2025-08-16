@@ -9,6 +9,7 @@ interface SalaryInputFormProps {
     month: number;
     employeeName: string;
     workDays: number;
+    workHours: number; // extraHours 대신 workHours로 변경
     hourlyWage: number;
     weeklyHolidayAllowance: number;
     bonus: number;
@@ -22,6 +23,7 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
   const [employeeName, setEmployeeName] = useState('홍길동');
   // 근무일수는 자동계산, 시급과 주휴수당은 초기값으로 설정
   const [workDays, setWorkDays] = useState(0);
+  const [workHours, setWorkHours] = useState(0); // extraHours 대신 workHours 사용
   const [hourlyWage, setHourlyWage] = useState(11000);
   const [weeklyHolidayAllowance, setWeeklyHolidayAllowance] = useState(2200);
   const [hasBonus, setHasBonus] = useState(false);
@@ -51,9 +53,10 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
     setSelectedDates(newSelectedDates);
   }, [year, month]);
 
-  // 선택된 날짜 수를 근무일수로 설정
+  // 선택된 날짜 수를 근무일수로 설정하고 근무시간도 자동 계산
   useEffect(() => {
     setWorkDays(selectedDates.size);
+    setWorkHours(selectedDates.size * 4); // 기본 근무시간으로 설정
   }, [selectedDates]);
 
   const handleDateToggle = (day: number) => {
@@ -66,6 +69,22 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
     setSelectedDates(newSelectedDates);
   };
 
+  // 근무시간 증가/감소 함수
+  const increaseWorkHours = () => {
+    setWorkHours(prev => prev + 1);
+  };
+
+  const decreaseWorkHours = () => {
+    if (workHours > 0) {
+      setWorkHours(prev => prev - 1);
+    }
+  };
+
+  // 기본 근무시간 계산 (근무일수 × 4시간)
+  const baseWorkHours = workDays * 4;
+  // 기타가감 시간 (실제 근무시간 - 기본 근무시간)
+  const extraHours = workHours - baseWorkHours;
+
   const getCalendarDays = () => {
     const startDate = new Date(year, month - 1, 1);
     const endDate = new Date(year, month, 0);
@@ -76,7 +95,7 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
     
     // 첫 주의 빈 칸들
     for (let i = 0; i < firstDayOfWeek; i++) {
-      days.push(<div key={`empty-${i}`} className="w-8 h-8"></div>);
+      days.push(<div key={`empty-${i}`} className="w-6 h-6 sm:w-8 sm:h-8"></div>);
     }
     
     // 월의 날짜들
@@ -91,7 +110,7 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
           key={day}
           type="button"
           onClick={() => handleDateToggle(day)}
-          className={`w-8 h-8 rounded-full text-sm font-medium transition-colors ${
+          className={`w-6 h-6 sm:w-8 sm:h-8 rounded-full text-xs sm:text-sm font-medium transition-colors ${
             isWeekend 
               ? 'text-gray-400 cursor-not-allowed bg-gray-100' 
               : isSelected 
@@ -115,6 +134,7 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
       month,
       employeeName,
       workDays,
+      workHours, // extraHours 대신 workHours 전달
       hourlyWage,
       weeklyHolidayAllowance,
       bonus: hasBonus ? bonus : 0,
@@ -192,7 +212,7 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
             <label htmlFor="workDays" className="block text-sm font-medium text-gray-700 mb-2">
               근무일수 (수정가능)
             </label>
-            <div className="flex gap-2">
+            <div className="flex gap-2 relative">
               <input
                 type="number"
                 id="workDays"
@@ -216,7 +236,12 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
             
             {/* 달력 드롭다운 */}
             {showCalendar && (
-              <div className="absolute z-10 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4 w-80">
+              <div className="absolute z-10 mt-2 bg-white border border-gray-300 rounded-lg shadow-lg p-4 
+                w-[calc(100vw-2rem)] max-w-80 sm:w-80
+                left-1/2 transform -translate-x-1/2
+                sm:left-auto sm:right-0 sm:transform-none
+                mx-auto sm:mx-0
+                shadow-xl">
                 <div className="text-center mb-3">
                   <h3 className="text-lg font-semibold text-gray-800">
                     {year}년 {month}월
@@ -227,7 +252,7 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
                 {/* 요일 헤더 */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
                   {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
-                    <div key={day} className="w-8 h-8 flex items-center justify-center text-sm font-medium text-gray-600">
+                    <div key={day} className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-medium text-gray-600">
                       {day}
                     </div>
                   ))}
@@ -253,19 +278,42 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
         </div>
 
         {/* 근무시간, 시급, 주휴수당 입력 */}
-        <div className="grid grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
           {/* 근무시간 (자동계산) */}
           <div>
             <label htmlFor="workHours" className="block text-sm font-medium text-gray-700 mb-2">
               근무시간 (자동계산)
             </label>
-            <input
-              type="number"
-              id="workHours"
-              value={workDays * 4}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-200 text-gray-500 text-right"
-              readOnly
-            />
+            <div className="flex items-center w-full">
+              <button
+                type="button"
+                onClick={decreaseWorkHours}
+                className="w-10 h-10 border border-gray-300 rounded-l-md bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-bold flex-shrink-0"
+              >
+                -
+              </button>
+              <input
+                type="number"
+                id="workHours"
+                value={workHours}
+                onChange={(e) => setWorkHours(Number(e.target.value))}
+                className="w-[calc(100%-5rem)] px-3 py-2 border-t border-b border-gray-300 bg-gray-200 text-gray-700 text-center focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                min="0"
+                step="0.5"
+                required
+                onFocus={(e) => e.target.select()}
+              />
+              <button
+                type="button"
+                onClick={increaseWorkHours}
+                className="w-10 h-10 border border-gray-300 rounded-r-md bg-gray-50 hover:bg-gray-100 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-lg font-bold flex-shrink-0"
+              >
+                +
+              </button>
+            </div>
+            <p className="text-xs text-gray-500 mt-1">
+              기본: {baseWorkHours}시간 + 기타가감: {extraHours > 0 ? '+' : ''}{extraHours}시간
+            </p>
           </div>
           
           {/* 시급 (수정 가능) */}
@@ -323,8 +371,8 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
           </div>
           
           {hasBonus && (
-            <div className="grid grid-cols-3 gap-4">
-              <div className="col-span-1">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              <div className="md:col-span-1">
                 <label htmlFor="bonus" className="block text-sm font-medium text-gray-700 mb-2">
                   상여금 (원)
                 </label>
@@ -341,16 +389,16 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
                 />
               </div>
               
-              <div className="col-span-2">
+              <div className="md:col-span-2">
                 <label htmlFor="remarks" className="block text-sm font-medium text-gray-700 mb-2">
                   비고
                 </label>
-                <textarea
+                <input
+                  type="text"
                   id="remarks"
                   value={remarks}
                   onChange={(e) => setRemarks(e.target.value)}
                   className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  rows={3}
                   placeholder="추가 비고사항을 입력하세요"
                 />
               </div>
@@ -373,6 +421,7 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
         <ul className="text-sm text-blue-700 space-y-1">
           <li>• 근무일수는 주말과 공휴일을 제외하여 자동 계산됩니다</li>
           <li>• 하루 근무시간은 4시간으로 계산됩니다</li>
+          <li>• 근무시간은 +/- 버튼으로 조정하거나 직접 입력할 수 있습니다</li>
           <li>• 시급과 주휴수당은 필요에 따라 수정할 수 있습니다</li>
           <li>• 소득세는 3.3%, 농어촌세는 소득세의 10%로 계산됩니다</li>
           <li>• 📅 버튼을 클릭하여 개별 근무일을 선택/해제할 수 있습니다</li>

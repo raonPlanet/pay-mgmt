@@ -59,9 +59,9 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
         </h2>
         <button
           onClick={onBack}
-          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200"
+          className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors duration-200 flex items-center gap-2"
         >
-          ← 뒤로가기
+          🏠 홈으로
         </button>
       </div>
 
@@ -110,7 +110,12 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
             </div>
             <div className="flex justify-between">
               <span className="font-medium text-gray-700">근무시간:</span>
-              <span className="text-gray-900">{salaryData.workHours}시간</span>
+              <span className="text-gray-900">
+                {salaryData.workHours}시간
+                <span className="text-sm text-gray-500 ml-2">
+                  (기본: {salaryData.workDays * 4}시간 + 기타가감: {salaryData.extraHours > 0 ? '+' : ''}{salaryData.extraHours}시간)
+                </span>
+              </span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium text-gray-700">시급:</span>
@@ -162,7 +167,12 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
               <tr>
                 <td className="border border-gray-300 px-3 py-3 text-center text-sm">{salaryData.workPeriod}</td>
                 <td className="border border-gray-300 px-2 py-3 text-center text-sm">{salaryData.workDays}일</td>
-                <td className="border border-gray-300 px-2 py-3 text-center text-sm">{salaryData.workHours}시간</td>
+                <td className="border border-gray-300 px-2 py-3 text-center text-sm">
+                  {salaryData.workHours}시간
+                  <div className="text-xs text-gray-500">
+                    (기타가감: {salaryData.extraHours > 0 ? '+' : ''}{salaryData.extraHours}시간)
+                  </div>
+                </td>
                 <td className="border border-gray-300 px-2 py-3 text-center text-sm">{salaryData.hourlyWage.toLocaleString()}</td>
                 <td className="border border-gray-300 px-2 py-3 text-center text-sm">{salaryData.baseSalary.toLocaleString()}</td>
                 <td className="border border-gray-300 px-2 py-3 text-center text-sm">{salaryData.weeklyHolidayAllowance.toLocaleString()}</td>

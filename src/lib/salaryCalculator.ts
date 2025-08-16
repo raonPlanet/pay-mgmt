@@ -47,6 +47,7 @@ export interface SalaryCalculation {
   workPeriod: string;
   workDays: number;
   workHours: number;
+  extraHours: number; // 기타가감 시간 (계산된 값)
   hourlyWage: number;
   baseSalary: number;
   weeklyHolidayAllowance: number;
@@ -64,12 +65,15 @@ export function calculateSalary(
   month: number,
   employeeName: string,
   workDays: number,
+  workHours: number, // extraHours 대신 workHours를 직접 받음
   hourlyWage: number,
   weeklyHolidayAllowance: number,
   bonus: number = 0,
   remarks: string = ''
 ): SalaryCalculation {
-  const workHours = workDays * 4; // 하루 4시간 근무
+  // 기타가감 시간 계산 (실제 근무시간 - 기본 근무시간)
+  const baseWorkHours = workDays * 4; // 하루 4시간 근무
+  const extraHours = workHours - baseWorkHours;
   
   // 급여액: 근무시간 × 시급
   const baseSalary = workHours * hourlyWage;
@@ -95,6 +99,7 @@ export function calculateSalary(
     workPeriod,
     workDays,
     workHours,
+    extraHours,
     hourlyWage,
     baseSalary,
     weeklyHolidayAllowance: totalWeeklyHolidayAllowance,
@@ -119,8 +124,8 @@ export function formatCurrency(amount: number): string {
 }
 
 /**
- * 숫자를 한국 원화 형식으로 포맷팅합니다 (₩ 기호 포함)
+ * 숫자를 한국 원화 형식으로 포맷팅합니다 (백슬래시 제거)
  */
 export function formatKRW(amount: number): string {
-  return `₩ ${amount.toLocaleString('ko-KR')}`;
+  return amount.toLocaleString('ko-KR');
 }

@@ -114,12 +114,12 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
       background: white;
       color: #333;
     ">
-      <!-- 제목 -->
-      <div style="text-align: center; margin-bottom: 30px;">
-        <h1 style="font-size: 28px; font-weight: bold; color: #2c3e50; margin: 0;">
-          ${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서
-        </h1>
-      </div>
+             <!-- 제목 -->
+       <div style="text-align: center; margin-bottom: 30px;">
+         <h1 style="font-size: 28px; font-weight: bold; color: #2c3e50; margin: 0;">
+           ${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서
+         </h1>
+       </div>
 
       <!-- 근로자 정보 -->
       <div style="margin-bottom: 30px;">
@@ -128,9 +128,10 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
 
       <!-- 급여 지급 내역 테이블 -->
       <div style="margin-bottom: 40px;">
-        <h3 style="font-size: 16px; color: #2c3e50; margin-bottom: 15px; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
-          급여 지급 내역
-        </h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #3498db; padding-bottom: 5px;">
+          <h3 style="font-size: 16px; color: #2c3e50; margin: 0;">급여 지급 내역</h3>
+          <span style="font-size: 14px; color: #7f8c8d;">(단위: 원)</span>
+        </div>
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
           <thead>
             <tr style="background-color: #f8f9fa;">
@@ -147,8 +148,11 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
           <tbody>
             <tr>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workPeriod}</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workDays}일</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workHours}시간</td>
+                             <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workDays}일</td>
+                               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">
+                  ${salaryData.workHours}시간
+                  ${salaryData.extraHours !== 0 ? `<br><span style="font-size: 11px; color: #7f8c8d;">(기타가감: ${salaryData.extraHours > 0 ? '+' : ''}${salaryData.extraHours}시간)</span>` : ''}
+                </td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.hourlyWage.toLocaleString()}</td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.baseSalary.toLocaleString()}</td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.weeklyHolidayAllowance.toLocaleString()}</td>
@@ -163,9 +167,10 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
 
       <!-- 공제 및 실지급액 테이블 -->
       <div>
-        <h3 style="font-size: 16px; color: #2c3e50; margin-bottom: 15px; border-bottom: 2px solid #e74c3c; padding-bottom: 5px;">
-          공제 및 실지급액
-        </h3>
+        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #e74c3c; padding-bottom: 5px;">
+          <h3 style="font-size: 16px; color: #2c3e50; margin: 0;">공제 및 실지급액</h3>
+          <span style="font-size: 14px; color: #7f8c8d;">(단위: 원)</span>
+        </div>
         <table style="width: 100%; border-collapse: collapse; border: 1px solid #ddd;">
           <thead>
             <tr style="background-color: #f8f9fa;">
