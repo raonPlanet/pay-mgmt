@@ -90,13 +90,55 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
 
       {/* 급여 지급 내역 */}
       <div className="mb-6">
-        <div className="flex justify-between items-center mb-4 border-b-2 border-blue-500 pb-2">
-          <h3 className="text-lg font-semibold text-gray-800">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b-2 border-blue-500 pb-2">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2 sm:mb-0">
             급여 지급 내역
           </h3>
           <span className="text-sm text-gray-600">(단위: 원)</span>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* 모바일용 카드 레이아웃 */}
+        <div className="block sm:hidden">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">근무일자:</span>
+              <span className="text-gray-900">{salaryData.workPeriod}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">근무일수:</span>
+              <span className="text-gray-900">{salaryData.workDays}일</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">근무시간:</span>
+              <span className="text-gray-900">{salaryData.workHours}시간</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">시급:</span>
+              <span className="text-gray-900">{salaryData.hourlyWage.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">급여액수:</span>
+              <span className="text-gray-900">{salaryData.baseSalary.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">주휴수당:</span>
+              <span className="text-gray-900">{salaryData.weeklyHolidayAllowance.toLocaleString()}</span>
+            </div>
+            {salaryData.bonus > 0 && (
+              <div className="flex justify-between">
+                <span className="font-medium text-gray-700">상여금:</span>
+                <span className="text-gray-900">{salaryData.bonus.toLocaleString()}</span>
+              </div>
+            )}
+            <div className="flex justify-between pt-2 border-t border-gray-300">
+              <span className="font-bold text-gray-700">합계:</span>
+              <span className="font-bold text-red-600">{salaryData.totalSalary.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 데스크톱용 테이블 레이아웃 */}
+        <div className="hidden sm:block">
           <table className="w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-50">
@@ -138,13 +180,41 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
 
       {/* 공제 및 실지급액 */}
       <div className="mb-8">
-        <div className="flex justify-between items-center mb-4 border-b-2 border-red-500 pb-2">
-          <h3 className="text-lg font-semibold text-gray-800">
+        <div className="flex flex-col sm:flex-row sm:justify-between sm:items-center mb-4 border-b-2 border-red-500 pb-2">
+          <h3 className="text-lg font-semibold text-gray-800 mb-2 sm:mb-0">
             공제 및 실지급액
           </h3>
           <span className="text-sm text-gray-600">(단위: 원)</span>
         </div>
-        <div className="overflow-x-auto">
+        
+        {/* 모바일용 카드 레이아웃 */}
+        <div className="block sm:hidden">
+          <div className="bg-gray-50 rounded-lg p-4 space-y-3">
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">원천징수율:</span>
+              <span className="text-gray-900">3.30%</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">소득세:</span>
+              <span className="text-gray-900">{salaryData.incomeTax.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">농어촌세:</span>
+              <span className="text-gray-900">{salaryData.ruralTax.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between">
+              <span className="font-medium text-gray-700">징수 금액:</span>
+              <span className="text-gray-900">{salaryData.totalDeduction.toLocaleString()}</span>
+            </div>
+            <div className="flex justify-between pt-2 border-t border-gray-300">
+              <span className="font-bold text-gray-700">실 지급 금액:</span>
+              <span className="font-bold text-green-600">{salaryData.netPayment.toLocaleString()}</span>
+            </div>
+          </div>
+        </div>
+
+        {/* 데스크톱용 테이블 레이아웃 */}
+        <div className="hidden sm:block">
           <table className="w-full border-collapse border border-gray-300">
             <thead>
               <tr className="bg-gray-50">
