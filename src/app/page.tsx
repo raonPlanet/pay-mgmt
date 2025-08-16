@@ -43,10 +43,10 @@ export default function Home() {
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
             💰 급여명세서 (든든한가)
           </h1>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+          {/* <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             간단한 입력으로 급여명세를 자동 계산하고, 이미지나 PDF로 다운로드하여 
             카카오톡으로 공유할 수 있습니다.
-          </p>
+          </p> */}
         </div>
 
         {/* 메인 컨텐츠 */}

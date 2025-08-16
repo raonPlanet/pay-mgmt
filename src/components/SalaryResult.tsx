@@ -17,7 +17,7 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
     setIsGenerating(true);
     try {
       await generateSalaryImage(salaryData);
-      alert('이미지가 생성되었습니다!');
+      alert('이미지가 생성되었습니다! 다운로드 폴더를 확인해주세요.');
     } catch (error) {
       console.error('이미지 생성 오류:', error);
       alert('이미지 생성 중 오류가 발생했습니다.');

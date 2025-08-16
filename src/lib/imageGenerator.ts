@@ -7,31 +7,44 @@ import jsPDF from 'jspdf';
 import { SalaryCalculation, formatKRW } from './salaryCalculator';
 
 /**
- * 급여명세서를 이미지로 변환합니다
+ * 급여명세서를 이미지로 변환하고 다운로드합니다
  */
-export async function generateSalaryImage(salaryData: SalaryCalculation): Promise<string> {
-  // 임시 DOM 요소 생성
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = generateSalaryHTML(salaryData);
-  tempDiv.style.position = 'absolute';
-  tempDiv.style.left = '-9999px';
-  tempDiv.style.top = '-9999px';
-  document.body.appendChild(tempDiv);
-
+export async function generateSalaryImage(salaryData: SalaryCalculation): Promise<void> {
   try {
+    // 임시 DOM 요소 생성
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = generateSalaryHTML(salaryData);
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '-9999px';
+    tempDiv.style.width = '800px';
+    tempDiv.style.backgroundColor = '#ffffff';
+    document.body.appendChild(tempDiv);
+
     const canvas = await html2canvas(tempDiv, {
       width: 800,
       height: 600,
       scale: 2,
       backgroundColor: '#ffffff',
       logging: false,
-      useCORS: true
+      useCORS: true,
+      allowTaint: true
     });
 
-    const imageData = canvas.toDataURL('image/png');
-    return imageData;
-  } finally {
+    // 이미지 다운로드
+    const link = document.createElement('a');
+    const fileName = `${salaryData.employeeName}_${salaryData.workPeriod.split('~')[0].trim()}_급여명세서.png`;
+    link.download = fileName;
+    link.href = canvas.toDataURL('image/png');
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    // 임시 요소 제거
     document.body.removeChild(tempDiv);
+  } catch (error) {
+    console.error('이미지 생성 오류:', error);
+    throw error;
   }
 }
 
@@ -39,21 +52,24 @@ export async function generateSalaryImage(salaryData: SalaryCalculation): Promis
  * 급여명세서를 PDF로 다운로드합니다
  */
 export async function downloadSalaryPDF(salaryData: SalaryCalculation): Promise<void> {
-  const tempDiv = document.createElement('div');
-  tempDiv.innerHTML = generateSalaryHTML(salaryData);
-  tempDiv.style.position = 'absolute';
-  tempDiv.style.left = '-9999px';
-  tempDiv.style.top = '-9999px';
-  document.body.appendChild(tempDiv);
-
   try {
+    const tempDiv = document.createElement('div');
+    tempDiv.innerHTML = generateSalaryHTML(salaryData);
+    tempDiv.style.position = 'absolute';
+    tempDiv.style.left = '-9999px';
+    tempDiv.style.top = '-9999px';
+    tempDiv.style.width = '800px';
+    tempDiv.style.backgroundColor = '#ffffff';
+    document.body.appendChild(tempDiv);
+
     const canvas = await html2canvas(tempDiv, {
       width: 800,
       height: 600,
       scale: 2,
       backgroundColor: '#ffffff',
       logging: false,
-      useCORS: true
+      useCORS: true,
+      allowTaint: true
     });
 
     const imgData = canvas.toDataURL('image/png');
@@ -77,8 +93,12 @@ export async function downloadSalaryPDF(salaryData: SalaryCalculation): Promise<
 
     const fileName = `${salaryData.employeeName}_${salaryData.workPeriod.split('~')[0].trim()}_급여명세서.pdf`;
     pdf.save(fileName);
-  } finally {
+    
+    // 임시 요소 제거
     document.body.removeChild(tempDiv);
+  } catch (error) {
+    console.error('PDF 생성 오류:', error);
+    throw error;
   }
 }
 
@@ -120,7 +140,7 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
               <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">시급</th>
               <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">급여액수</th>
               <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">주휴수당</th>
-              <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">상여금</th>
+              ${salaryData.bonus > 0 ? '<th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">상여금</th>' : ''}
               <th style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold;">합계</th>
             </tr>
           </thead>
@@ -129,12 +149,12 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workPeriod}</td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workDays}일</td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workHours}시간</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.hourlyWage)}</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.baseSalary)}</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.weeklyHolidayAllowance)}</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.bonus)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.hourlyWage.toLocaleString()}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.baseSalary.toLocaleString()}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.weeklyHolidayAllowance.toLocaleString()}</td>
+              ${salaryData.bonus > 0 ? `<td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.bonus.toLocaleString()}</td>` : ''}
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold; color: #e74c3c;">
-                ${formatKRW(salaryData.totalSalary)}
+                ${salaryData.totalSalary.toLocaleString()}
               </td>
             </tr>
           </tbody>
@@ -159,11 +179,11 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
           <tbody>
             <tr>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">3.30%</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.incomeTax)}</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.ruralTax)}</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.totalDeduction)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.incomeTax.toLocaleString()}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.ruralTax.toLocaleString()}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.totalDeduction.toLocaleString()}</td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold; color: #27ae60;">
-                ${formatKRW(salaryData.netPayment)}
+                ${salaryData.netPayment.toLocaleString()}
               </td>
             </tr>
           </tbody>
@@ -180,32 +200,80 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
 }
 
 /**
- * 카카오톡 공유를 위한 이미지 URL을 생성합니다
+ * 카카오톡 공유를 위한 이미지 다운로드 및 공유 기능
  */
 export async function shareToKakao(salaryData: SalaryCalculation): Promise<void> {
   try {
-    const imageData = await generateSalaryImage(salaryData);
+    // 모바일과 PC를 구분하여 처리
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     
-    // 카카오톡 공유 API 호출 (실제 구현 시 카카오톡 앱 연동 필요)
-    if (navigator.share) {
-      // Web Share API 사용
-      await navigator.share({
-        title: `${salaryData.employeeName} 급여명세서`,
-        text: `${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서입니다.`,
-        url: imageData
+    if (isMobile) {
+      // 모바일: 이미지 생성 후 공유 시도
+      const tempDiv = document.createElement('div');
+      tempDiv.innerHTML = generateSalaryHTML(salaryData);
+      tempDiv.style.position = 'absolute';
+      tempDiv.style.left = '-9999px';
+      tempDiv.style.top = '-9999px';
+      tempDiv.style.width = '800px';
+      tempDiv.style.backgroundColor = '#ffffff';
+      document.body.appendChild(tempDiv);
+
+      const canvas = await html2canvas(tempDiv, {
+        width: 800,
+        height: 600,
+        scale: 2,
+        backgroundColor: '#ffffff',
+        logging: false,
+        useCORS: true,
+        allowTaint: true
       });
+
+      // Web Share API 사용 시도
+      if (navigator.share) {
+        try {
+          const blob = await new Promise<Blob>((resolve) => {
+            canvas.toBlob((blob) => resolve(blob!), 'image/png');
+          });
+          
+          const file = new File([blob], `${salaryData.employeeName}_급여명세서.png`, { type: 'image/png' });
+          
+          await navigator.share({
+            title: `${salaryData.employeeName} 급여명세서`,
+            text: `${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서입니다.`,
+            files: [file]
+          });
+        } catch (shareError) {
+          console.log('공유 API 실패, 이미지 다운로드로 대체:', shareError);
+          // 공유 실패 시 이미지 다운로드
+          const link = document.createElement('a');
+          const fileName = `${salaryData.employeeName}_급여명세서.png`;
+          link.download = fileName;
+          link.href = canvas.toDataURL('image/png');
+          document.body.appendChild(link);
+          link.click();
+          document.body.removeChild(link);
+        }
+      } else {
+        // Web Share API가 없는 경우 이미지 다운로드
+        const link = document.createElement('a');
+        const fileName = `${salaryData.employeeName}_급여명세서.png`;
+        link.download = fileName;
+        link.href = canvas.toDataURL('image/png');
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+      
+      document.body.removeChild(tempDiv);
     } else {
-      // 폴백: 이미지 다운로드
-      const link = document.createElement('a');
-      link.download = `${salaryData.employeeName}_급여명세서.png`;
-      link.href = imageData;
-      link.click();
+      // PC: 이미지 다운로드
+      await generateSalaryImage(salaryData);
     }
   } catch (error) {
     console.error('카카오톡 공유 중 오류 발생:', error);
     alert('공유 기능을 사용할 수 없습니다. 이미지를 다운로드합니다.');
     
-    // 오류 발생 시 PDF 다운로드로 대체
-    await downloadSalaryPDF(salaryData);
+    // 오류 발생 시 이미지 다운로드로 대체
+    await generateSalaryImage(salaryData);
   }
 }
