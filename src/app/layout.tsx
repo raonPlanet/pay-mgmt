@@ -33,6 +33,22 @@ export default function RootLayout({
         <meta name="google-site-verification" content="EYvvgYuUQJHsWUFU1-Y_zW7en8vklZJraZeI-kA8vQI" />
         <meta name="naver-site-verification" content="fe0e41eaacfbe0d257f6c10e8a6722246d3fa07d" />
         <link rel="alternate" type="application/rss+xml" title="급여계산 프로그램 RSS 피드" href="/feed.xml" />
+        
+        {/* Google Analytics 4 */}
+        <Script
+          src={`https://www.googletagmanager.com/gtag/js?id=G-064K4D96R6`}
+          strategy="afterInteractive"
+        />
+        <Script id="google-analytics" strategy="afterInteractive">
+          {`
+            window.dataLayer = window.dataLayer || [];
+            function gtag(){dataLayer.push(arguments);}
+            gtag('js', new Date());
+            gtag('config', 'G-064K4D96R6');
+          `}
+        </Script>
+        
+        {/* Google AdSense */}
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3991087112666107"
