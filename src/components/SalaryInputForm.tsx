@@ -10,7 +10,6 @@ interface SalaryInputFormProps {
     employeeName: string;
     workDays: number;
     hourlyWage: number;
-    weeklyHolidayAllowance: number;
     bonus: number;
     remarks: string;
   }) => void;
@@ -20,10 +19,9 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
   const [year, setYear] = useState(new Date().getFullYear());
   const [month, setMonth] = useState(new Date().getMonth() + 1);
   const [employeeName, setEmployeeName] = useState('홍길동');
-  // 근무일수는 자동계산, 시급과 주휴수당은 초기값으로 설정
+  // 근무일수는 자동계산, 시급은 초기값으로 설정
   const [workDays, setWorkDays] = useState(0);
   const [hourlyWage, setHourlyWage] = useState(11000);
-  const [weeklyHolidayAllowance, setWeeklyHolidayAllowance] = useState(2200);
   const [hasBonus, setHasBonus] = useState(false);
   const [bonus, setBonus] = useState(0);
   const [remarks, setRemarks] = useState('');
@@ -116,7 +114,6 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
       employeeName,
       workDays,
       hourlyWage,
-      weeklyHolidayAllowance,
       bonus: hasBonus ? bonus : 0,
       remarks
     });
@@ -287,22 +284,17 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
             />
           </div>
           
-          {/* 주휴수당 (수정 가능) */}
+          {/* 주휴수당 (자동계산) */}
           <div>
             <label htmlFor="weeklyHolidayAllowance" className="block text-sm font-medium text-gray-700 mb-2">
-              주휴수당 (원)
+              주휴수당 (자동계산)
             </label>
             <input
               type="number"
               id="weeklyHolidayAllowance"
-              value={weeklyHolidayAllowance}
-              onChange={(e) => setWeeklyHolidayAllowance(Number(e.target.value))}
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-right"
-              placeholder="2200"
-              min="0"
-              step="100"
-              required
-              onFocus={(e) => e.target.select()}
+              value={Math.floor(hourlyWage * 8 * (workDays / 20))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-md bg-gray-200 text-gray-500 text-right"
+              readOnly
             />
           </div>
         </div>
@@ -373,7 +365,8 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
         <ul className="text-sm text-blue-700 space-y-1">
           <li>• 근무일수는 주말과 공휴일을 제외하여 자동 계산됩니다</li>
           <li>• 하루 근무시간은 4시간으로 계산됩니다</li>
-          <li>• 시급과 주휴수당은 필요에 따라 수정할 수 있습니다</li>
+          <li>• 시급은 필요에 따라 수정할 수 있습니다</li>
+          <li>• 주휴수당은 근로기준법에 따라 자동 계산됩니다 (시급 × 8시간 × 근무일수/20)</li>
           <li>• 소득세는 3.3%, 농어촌세는 소득세의 10%로 계산됩니다</li>
           <li>• 📅 버튼을 클릭하여 개별 근무일을 선택/해제할 수 있습니다</li>
         </ul>

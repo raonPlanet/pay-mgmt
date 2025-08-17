@@ -14,7 +14,6 @@ export default function Home() {
     employeeName: string;
     workDays: number;
     hourlyWage: number;
-    weeklyHolidayAllowance: number;
     bonus: number;
     remarks: string;
   }) => {
@@ -24,7 +23,7 @@ export default function Home() {
       data.employeeName,
       data.workDays,
       data.hourlyWage,
-      data.weeklyHolidayAllowance,
+      0, // 주휴수당은 자동 계산되므로 0으로 전달
       data.bonus,
       data.remarks
     );

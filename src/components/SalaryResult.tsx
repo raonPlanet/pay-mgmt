@@ -109,7 +109,10 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
                 </th>
                 <th className="border border-gray-300 px-2 py-3 text-center font-medium text-gray-700 text-sm">시급</th>
                 <th className="border border-gray-300 px-2 py-3 text-center font-medium text-gray-700 text-sm">급여액수</th>
-                <th className="border border-gray-300 px-2 py-3 text-center font-medium text-gray-700 text-sm">주휴수당</th>
+                <th className="border border-gray-300 px-2 py-3 text-center font-medium text-gray-700 text-sm">
+                  <div>주휴수당</div>
+                  <div className="text-xs text-gray-500">(시급×8×근무일수/20)</div>
+                </th>
                 {salaryData.bonus > 0 && (
                   <th className="border border-gray-300 px-2 py-3 text-center font-medium text-gray-700 text-sm">상여금</th>
                 )}

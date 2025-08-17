@@ -74,8 +74,9 @@ export function calculateSalary(
   // 급여액: 근무시간 × 시급
   const baseSalary = workHours * hourlyWage;
   
-  // 주휴수당: 근무시간 × 주휴수당 (시급당 주휴수당)
-  const totalWeeklyHolidayAllowance = workHours * weeklyHolidayAllowance;
+  // 주휴수당: 시급 × 8시간 × (근무일수 ÷ 20) (월 기준 비례 계산)
+  // 근로기준법 제55조에 따른 주휴수당 계산
+  const totalWeeklyHolidayAllowance = Math.floor(hourlyWage * 8 * (workDays / 20));
   
   const totalSalary = baseSalary + totalWeeklyHolidayAllowance + bonus;
   

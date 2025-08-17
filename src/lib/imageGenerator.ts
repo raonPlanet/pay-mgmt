@@ -75,7 +75,11 @@ export async function downloadSalaryPDF(salaryData: SalaryCalculation): Promise<
       heightLeft -= pageHeight;
     }
 
-    const fileName = `${salaryData.employeeName}_${salaryData.workPeriod.split('~')[0].trim()}_급여명세서.pdf`;
+    // PDF 파일명을 익월로 표시하도록 수정
+    const currentMonth = parseInt(salaryData.workPeriod.split('~')[0].trim().split('.')[1]);
+    const nextMonth = currentMonth + 1;
+    const year = salaryData.workPeriod.split('~')[0].trim().split('.')[0];
+    const fileName = `${salaryData.employeeName}_${year}년${String(nextMonth).padStart(2, '0')}월_급여명세서.pdf`;
     pdf.save(fileName);
   } finally {
     document.body.removeChild(tempDiv);
@@ -86,6 +90,11 @@ export async function downloadSalaryPDF(salaryData: SalaryCalculation): Promise<
  * 급여명세서 HTML을 생성합니다 (이미지 변환용)
  */
 function generateSalaryHTML(salaryData: SalaryCalculation): string {
+  // 월 표시를 익월로 변경
+  const currentMonth = parseInt(salaryData.workPeriod.split('~')[0].trim().split('.')[1]);
+  const nextMonth = currentMonth + 1;
+  const year = salaryData.workPeriod.split('~')[0].trim().split('.')[0];
+  
   return `
     <div style="
       font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
@@ -97,7 +106,7 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
       <!-- 제목 -->
       <div style="text-align: center; margin-bottom: 30px;">
         <h1 style="font-size: 28px; font-weight: bold; color: #2c3e50; margin: 0;">
-          ${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서
+          ${year}년 ${String(nextMonth).padStart(2, '0')}월 급여명세서
         </h1>
       </div>
 
@@ -131,7 +140,7 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${salaryData.workHours}시간</td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.hourlyWage)}</td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.baseSalary)}</td>
-              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.weeklyHolidayAllowance)}</td>
+              <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.weeklyHolidayAllowance)}<br/><span style="font-size: 11px; color: #666;">(시급×8×${salaryData.workDays}/20)</span></td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center;">${formatKRW(salaryData.bonus)}</td>
               <td style="border: 1px solid #ddd; padding: 12px; text-align: center; font-weight: bold; color: #e74c3c;">
                 ${formatKRW(salaryData.totalSalary)}
@@ -186,18 +195,23 @@ export async function shareToKakao(salaryData: SalaryCalculation): Promise<void>
   try {
     const imageData = await generateSalaryImage(salaryData);
     
+    // 월 표시를 익월로 변경하여 공유 텍스트에도 반영
+    const currentMonth = parseInt(salaryData.workPeriod.split('~')[0].trim().split('.')[1]);
+    const nextMonth = currentMonth + 1;
+    const year = salaryData.workPeriod.split('~')[0].trim().split('.')[0];
+    
     // 카카오톡 공유 API 호출 (실제 구현 시 카카오톡 앱 연동 필요)
     if (navigator.share) {
       // Web Share API 사용
       await navigator.share({
         title: `${salaryData.employeeName} 급여명세서`,
-        text: `${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서입니다.`,
+        text: `${year}년 ${String(nextMonth).padStart(2, '0')}월 급여명세서입니다.`,
         url: imageData
       });
     } else {
       // 폴백: 이미지 다운로드
       const link = document.createElement('a');
-      link.download = `${salaryData.employeeName}_급여명세서.png`;
+      link.download = `${salaryData.employeeName}_${year}년${String(nextMonth).padStart(2, '0')}월_급여명세서.png`;
       link.href = imageData;
       link.click();
     }
