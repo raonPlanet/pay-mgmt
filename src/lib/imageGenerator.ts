@@ -91,7 +91,12 @@ export async function downloadSalaryPDF(salaryData: SalaryCalculation): Promise<
       heightLeft -= pageHeight;
     }
 
-    const fileName = `${salaryData.employeeName}_${salaryData.workPeriod.split('~')[0].trim()}_급여명세서.pdf`;
+    // PDF 파일명을 익월로 표시하도록 수정
+    const workPeriodStart = salaryData.workPeriod.split('~')[0].trim();
+    const year = workPeriodStart.split('.')[0];
+    const month = parseInt(workPeriodStart.split('.')[1]);
+    const nextMonth = month + 1;
+    const fileName = `${salaryData.employeeName}_${year}년${String(nextMonth).padStart(2, '0')}월_급여명세서.pdf`;
     pdf.save(fileName);
     
     // 임시 요소 제거
@@ -106,6 +111,12 @@ export async function downloadSalaryPDF(salaryData: SalaryCalculation): Promise<
  * 급여명세서 HTML을 생성합니다 (이미지 변환용)
  */
 function generateSalaryHTML(salaryData: SalaryCalculation): string {
+  // 월 표시를 익월로 변경
+  const workPeriodStart = salaryData.workPeriod.split('~')[0].trim();
+  const year = workPeriodStart.split('.')[0];
+  const month = parseInt(workPeriodStart.split('.')[1]);
+  const nextMonth = month + 1;
+  
   return `
     <div style="
       font-family: 'Malgun Gothic', '맑은 고딕', sans-serif;
@@ -114,12 +125,12 @@ function generateSalaryHTML(salaryData: SalaryCalculation): string {
       background: white;
       color: #333;
     ">
-             <!-- 제목 -->
-       <div style="text-align: center; margin-bottom: 30px;">
-         <h1 style="font-size: 28px; font-weight: bold; color: #2c3e50; margin: 0;">
-           ${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서
-         </h1>
-       </div>
+      <!-- 제목 -->
+      <div style="text-align: center; margin-bottom: 30px;">
+        <h1 style="font-size: 28px; font-weight: bold; color: #2c3e50; margin: 0;">
+          ${year}년 ${String(nextMonth).padStart(2, '0')}월 급여명세서
+        </h1>
+      </div>
 
       <!-- 근로자 정보 -->
       <div style="margin-bottom: 30px;">
@@ -233,40 +244,28 @@ export async function shareToKakao(salaryData: SalaryCalculation): Promise<void>
         allowTaint: true
       });
 
-      // Web Share API 사용 시도
+      const imageData = canvas.toDataURL('image/png');
+
+      // 월 표시를 익월로 변경하여 공유 텍스트에도 반영
+      const workPeriodStart = salaryData.workPeriod.split('~')[0].trim();
+      const year = workPeriodStart.split('.')[0];
+      const month = parseInt(workPeriodStart.split('.')[1]);
+      const nextMonth = month + 1;
+      
+      // 카카오톡 공유 API 호출 (실제 구현 시 카카오톡 앱 연동 필요)
       if (navigator.share) {
-        try {
-          const blob = await new Promise<Blob>((resolve) => {
-            canvas.toBlob((blob) => resolve(blob!), 'image/png');
-          });
-          
-          const file = new File([blob], `${salaryData.employeeName}_급여명세서.png`, { type: 'image/png' });
-          
-          await navigator.share({
-            title: `${salaryData.employeeName} 급여명세서`,
-            text: `${salaryData.workPeriod.split('~')[0].trim().split('.')[0]}년 ${salaryData.workPeriod.split('~')[0].trim().split('.')[1]}월 급여명세서입니다.`,
-            files: [file]
-          });
-        } catch (shareError) {
-          console.log('공유 API 실패, 이미지 다운로드로 대체:', shareError);
-          // 공유 실패 시 이미지 다운로드
-          const link = document.createElement('a');
-          const fileName = `${salaryData.employeeName}_급여명세서.png`;
-          link.download = fileName;
-          link.href = canvas.toDataURL('image/png');
-          document.body.appendChild(link);
-          link.click();
-          document.body.removeChild(link);
-        }
+        // Web Share API 사용
+        await navigator.share({
+          title: `${salaryData.employeeName} 급여명세서`,
+          text: `${year}년 ${String(nextMonth).padStart(2, '0')}월 급여명세서입니다.`,
+          url: imageData
+        });
       } else {
-        // Web Share API가 없는 경우 이미지 다운로드
+        // 폴백: 이미지 다운로드
         const link = document.createElement('a');
-        const fileName = `${salaryData.employeeName}_급여명세서.png`;
-        link.download = fileName;
-        link.href = canvas.toDataURL('image/png');
-        document.body.appendChild(link);
+        link.download = `${salaryData.employeeName}_${year}년${String(nextMonth).padStart(2, '0')}월_급여명세서.png`;
+        link.href = imageData;
         link.click();
-        document.body.removeChild(link);
       }
       
       document.body.removeChild(tempDiv);

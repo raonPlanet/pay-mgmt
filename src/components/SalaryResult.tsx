@@ -68,7 +68,14 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
       {/* 근로자 정보 */}
       <div className="mb-6 p-4 bg-blue-50 rounded-lg">
         <h3 className="text-lg font-semibold text-blue-800 mb-2">
-          {salaryData.workPeriod.split('~')[0].split('.')[0]}년 {String(Number(salaryData.workPeriod.split('~')[0].split('.')[1]) + 1).padStart(2, '0')}월 급여명세서
+          {(() => {
+            // workPeriod에서 월을 추출하여 익월로 계산
+            const workPeriodStart = salaryData.workPeriod.split('~')[0].trim();
+            const year = workPeriodStart.split('.')[0];
+            const month = parseInt(workPeriodStart.split('.')[1]);
+            const nextMonth = month + 1;
+            return `${year}년 ${String(nextMonth).padStart(2, '0')}월 급여명세서`;
+          })()}
         </h3>
         <div className="grid grid-cols-2 gap-4 text-sm">
           <div>
