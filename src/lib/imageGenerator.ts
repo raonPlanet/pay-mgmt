@@ -234,41 +234,138 @@ export async function shareToKakao(salaryData: SalaryCalculation): Promise<void>
       tempDiv.style.backgroundColor = '#ffffff';
       document.body.appendChild(tempDiv);
 
-      const canvas = await html2canvas(tempDiv, {
-        width: 800,
-        height: 600,
-        scale: 2,
-        backgroundColor: '#ffffff',
-        logging: false,
-        useCORS: true,
-        allowTaint: true
-      });
-
-      const imageData = canvas.toDataURL('image/png');
-
-      // 월 표시를 익월로 변경하여 공유 텍스트에도 반영
-      const workPeriodStart = salaryData.workPeriod.split('~')[0].trim();
-      const year = workPeriodStart.split('.')[0];
-      const month = parseInt(workPeriodStart.split('.')[1]);
-      const nextMonth = month + 1;
-      
-      // 카카오톡 공유 API 호출 (실제 구현 시 카카오톡 앱 연동 필요)
-      if (navigator.share) {
-        // Web Share API 사용
-        await navigator.share({
-          title: `${salaryData.employeeName} 급여명세서`,
-          text: `${year}년 ${String(nextMonth).padStart(2, '0')}월 급여명세서입니다.`,
-          url: imageData
+      try {
+        const canvas = await html2canvas(tempDiv, {
+          width: 800,
+          height: 600,
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false,
+          useCORS: true,
+          allowTaint: true
         });
-      } else {
-        // 폴백: 이미지 다운로드
-        const link = document.createElement('a');
-        link.download = `${salaryData.employeeName}_${year}년${String(nextMonth).padStart(2, '0')}월_급여명세서.png`;
-        link.href = imageData;
-        link.click();
+
+        // 월 표시를 익월로 변경하여 공유 텍스트에도 반영
+        const workPeriodStart = salaryData.workPeriod.split('~')[0].trim();
+        const year = workPeriodStart.split('.')[0];
+        const month = parseInt(workPeriodStart.split('.')[1]);
+        const nextMonth = month + 1;
+        
+        // Web Share API 사용 (모바일에서 실제 파일 공유)
+        if (navigator.share && navigator.canShare) {
+          try {
+            // Canvas를 Blob으로 변환
+            const blob = await new Promise<Blob>((resolve) => {
+              canvas.toBlob((blob) => resolve(blob!), 'image/png');
+            });
+            
+            // File 객체 생성
+            const fileName = `${salaryData.employeeName}_${year}년${String(nextMonth).padStart(2, '0')}월_급여명세서.png`;
+            const file = new File([blob], fileName, { type: 'image/png' });
+            
+            // 공유 데이터 준비
+            const shareData: any = {
+              title: `${salaryData.employeeName} 급여명세서`,
+              text: `${year}년 ${String(nextMonth).padStart(2, '0')}월 급여명세서입니다.`,
+              files: [file]
+            };
+            
+            // 공유 가능한지 확인
+            if (navigator.canShare(shareData)) {
+              await navigator.share(shareData);
+              return; // 공유 성공 시 함수 종료
+            }
+          } catch (shareError) {
+            console.log('Web Share API 실패, 다른 방법 시도:', shareError);
+          }
+        }
+        
+        // Web Share API가 실패하거나 지원되지 않는 경우
+        // 이미지를 새 창에서 열어서 사용자가 직접 저장/공유할 수 있도록 함
+        const imageData = canvas.toDataURL('image/png');
+        const newWindow = window.open();
+        if (newWindow) {
+          newWindow.document.write(`
+            <html>
+              <head>
+                <title>${salaryData.employeeName} 급여명세서</title>
+                <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <style>
+                  body { 
+                    margin: 0; 
+                    padding: 20px; 
+                    background: #f5f5f5; 
+                    font-family: Arial, sans-serif; 
+                  }
+                  .container { 
+                    max-width: 600px; 
+                    margin: 0 auto; 
+                    background: white; 
+                    padding: 20px; 
+                    border-radius: 10px; 
+                    box-shadow: 0 2px 10px rgba(0,0,0,0.1); 
+                  }
+                  .image-container { 
+                    text-align: center; 
+                    margin: 20px 0; 
+                  }
+                  img { 
+                    max-width: 100%; 
+                    height: auto; 
+                    border: 1px solid #ddd; 
+                    border-radius: 5px; 
+                  }
+                  .button { 
+                    display: inline-block; 
+                    padding: 12px 24px; 
+                    margin: 10px; 
+                    background: #007bff; 
+                    color: white; 
+                    text-decoration: none; 
+                    border-radius: 5px; 
+                    font-weight: bold; 
+                  }
+                  .button:hover { 
+                    background: #0056b3; 
+                  }
+                  .instructions { 
+                    background: #e7f3ff; 
+                    padding: 15px; 
+                    border-radius: 5px; 
+                    margin: 20px 0; 
+                  }
+                </style>
+              </head>
+              <body>
+                <div class="container">
+                  <h1>${salaryData.employeeName} 급여명세서</h1>
+                  <div class="instructions">
+                    <h3>📱 모바일에서 공유하는 방법:</h3>
+                    <ol>
+                      <li>이미지를 길게 눌러 "이미지 저장" 선택</li>
+                      <li>저장된 이미지를 카카오톡으로 전송</li>
+                      <li>또는 이미지를 길게 눌러 "공유" 선택 후 카카오톡 선택</li>
+                    </ol>
+                  </div>
+                  <div class="image-container">
+                    <img src="${imageData}" alt="급여명세서" />
+                  </div>
+                  <div style="text-align: center;">
+                    <a href="${imageData}" download="${salaryData.employeeName}_${year}년${String(nextMonth).padStart(2, '0')}월_급여명세서.png" class="button">
+                      📥 이미지 다운로드
+                    </a>
+                  </div>
+                </div>
+              </body>
+            </html>
+          `);
+          newWindow.document.close();
+        }
+        
+      } finally {
+        document.body.removeChild(tempDiv);
       }
       
-      document.body.removeChild(tempDiv);
     } else {
       // PC: 이미지 다운로드
       await generateSalaryImage(salaryData);
@@ -277,7 +374,7 @@ export async function shareToKakao(salaryData: SalaryCalculation): Promise<void>
     console.error('카카오톡 공유 중 오류 발생:', error);
     alert('공유 기능을 사용할 수 없습니다. 이미지를 다운로드합니다.');
     
-    // 오류 발생 시 이미지 다운로드로 대체
-    await generateSalaryImage(salaryData);
+    // 오류 발생 시 PDF 다운로드로 대체
+    await downloadSalaryPDF(salaryData);
   }
 }
