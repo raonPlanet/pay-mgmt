@@ -315,7 +315,7 @@ export default function SalaryResult({ salaryData, onBack }: SalaryResultProps) 
           <li>• 이미지 생성: 급여명세서를 PNG 이미지로 변환합니다</li>
           <li>• PDF 다운로드: 급여명세서를 PDF 파일로 다운로드합니다</li>
           <li>• 카카오톡 공유: 모바일에서 카카오톡으로 이미지를 공유합니다</li>
-          <li>• <strong>모바일 공유 방법:</strong> 이미지가 새 창에서 열리면, 이미지를 길게 눌러 "이미지 저장" 후 카카오톡으로 전송하세요</li>
+          <li>• <strong>모바일 공유 방법:</strong> 이미지가 새 창에서 열리면, 이미지를 길게 눌러 &quot;이미지 저장&quot; 후 카카오톡으로 전송하세요</li>
           <li>• PC에서는 이미지 다운로드로 대체됩니다</li>
         </ul>
       </div>

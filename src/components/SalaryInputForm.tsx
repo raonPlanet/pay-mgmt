@@ -251,7 +251,7 @@ export default function SalaryInputForm({ onCalculate }: SalaryInputFormProps) {
                 
                 {/* 요일 헤더 */}
                 <div className="grid grid-cols-7 gap-1 mb-2">
-                  {['일', '월', '화', '수', '목', '금', '토'].map((day, index) => (
+                  {['일', '월', '화', '수', '목', '금', '토'].map((day) => (
                     <div key={day} className="w-6 h-6 sm:w-8 sm:h-8 flex items-center justify-center text-xs sm:text-sm font-medium text-gray-600">
                       {day}
                     </div>

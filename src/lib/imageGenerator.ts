@@ -4,7 +4,7 @@
 
 import html2canvas from 'html2canvas';
 import jsPDF from 'jspdf';
-import { SalaryCalculation, formatKRW } from './salaryCalculator';
+import { SalaryCalculation } from './salaryCalculator';
 
 /**
  * 급여명세서를 이미지로 변환하고 다운로드합니다
@@ -264,7 +264,11 @@ export async function shareToKakao(salaryData: SalaryCalculation): Promise<void>
             const file = new File([blob], fileName, { type: 'image/png' });
             
             // 공유 데이터 준비
-            const shareData: any = {
+            const shareData: {
+              title: string;
+              text: string;
+              files: File[];
+            } = {
               title: `${salaryData.employeeName} 급여명세서`,
               text: `${year}년 ${String(nextMonth).padStart(2, '0')}월 급여명세서입니다.`,
               files: [file]
