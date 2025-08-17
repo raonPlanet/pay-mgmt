@@ -31,6 +31,7 @@ export default function RootLayout({
       <head>
         <meta name="google-adsense-account" content="ca-pub-3991087112666107" />
         <meta name="google-site-verification" content="EYvvgYuUQJHsWUFU1-Y_zW7en8vklZJraZeI-kA8vQI" />
+        <link rel="alternate" type="application/rss+xml" title="급여계산 프로그램 RSS 피드" href="/feed.xml" />
         <Script
           async
           src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3991087112666107"

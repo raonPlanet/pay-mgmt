@@ -166,3 +166,14 @@ const ruralTax = Math.round(incomeTax * 0.1);      // 10%
 
 **개발자**: 급여계산 프로그램 팀  
 **최종 업데이트**: 2025년 1월
+
+## 📝 환경 변수
+
+```bash
+# .env.local 파일에 설정 (선택사항)
+NEXT_PUBLIC_SITE_URL=https://pay-mgmt.vercel.app
+GOOGLE_SITE_VERIFICATION=EYvvgYuUQJHsWUFU1-Y_zW7en8vklZJraZeI-kA8vQI
+NEXT_PUBLIC_GOOGLE_ADSENSE_ID=ca-pub-3991087112666107
+```
+
+**참고**: 현재 모든 도메인이 `https://pay-mgmt.vercel.app`로 하드코딩되어 있어 환경 변수 설정이 필요하지 않습니다.
