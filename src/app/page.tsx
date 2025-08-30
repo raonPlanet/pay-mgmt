@@ -1,5 +1,5 @@
 'use client';
-
+/* 메인 컨텐츠 */
 import React, { useState } from 'react';
 import SalaryInputForm from '@/components/SalaryInputForm';
 import SalaryResult from '@/components/SalaryResult';
