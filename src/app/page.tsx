@@ -43,7 +43,7 @@ export default function Home() {
         {/* 헤더 */}
         <div className="text-center mb-8">
           <h1 className="text-4xl font-bold text-gray-800 mb-4">
-            💰 급여명세서 💰
+            💰 급여명세서 9월 💰
           </h1>
           {/* <p className="text-lg text-gray-600 max-w-2xl mx-auto">
             간단한 입력으로 급여명세를 자동 계산하고, 이미지나 PDF로 다운로드하여 
